@@ -31,7 +31,7 @@ export function Layout() {
       </header>
 
       {/* Main */}
-      <main className="relative z-10 flex-1 max-w-3xl w-full mx-auto px-4 py-6 pb-28">
+      <main className="relative z-10 flex-1 max-w-3xl w-full mx-auto px-4 py-4 pb-24">
         <Outlet />
       </main>
 
