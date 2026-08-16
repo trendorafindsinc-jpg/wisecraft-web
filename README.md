@@ -54,3 +54,16 @@ npm run dev
 
 Part of the Trendora product family with **TrendoraTools (LUCIA)** and **Trendorafinds** content.  
 Design follows **Trendora Design System (TDS) v1**.
+
+## NVIDIA NIM (LLM)
+
+WISECRAFT uses NVIDIA NIM free inference (OpenAI-compatible).
+
+1. Create a free account at https://build.nvidia.com
+2. Generate an API key (starts with `nvapi-`)
+3. In Vercel → Project → Settings → Environment Variables:
+   - `NVIDIA_API_KEY` = your key
+   - Optional: `NVIDIA_MODEL` = `meta/llama-3.1-70b-instruct` (default)
+4. Redeploy
+
+Local testing of `/api/chat` requires `vercel dev` or deploying to Vercel.

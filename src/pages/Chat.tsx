@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { Send, Sparkles, Copy, Check, RotateCcw } from 'lucide-react'
+import { Send, Sparkles, Copy, Check } from 'lucide-react'
 
 type Message = {
   id: string
@@ -56,7 +56,7 @@ function MessageBubble({
   if (isUser) {
     return (
       <div className="flex justify-end animate-fade-in">
-        <div className="max-w-[85%] sm:max-w-[75%] bg-violet-600 text-white px-4 py-3 rounded-2xl rounded-br-md text-[15px] leading-relaxed shadow-lg shadow-violet-900/20">
+        <div className="max-w-[85%] sm:max-w-[75%] bg-violet-600 text-white px-4 py-3 rounded-2xl rounded-br-md text-[15px] leading-relaxed shadow-lg shadow-violet-900/20 whitespace-pre-wrap">
           {message.content}
         </div>
       </div>
@@ -74,7 +74,7 @@ function MessageBubble({
           {message.content}
         </div>
         {isLast && (
-          <div className="flex items-center gap-1 pt-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="flex items-center gap-1 pt-1 opacity-70 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
             <button
               type="button"
               onClick={copy}
@@ -90,6 +90,22 @@ function MessageBubble({
   )
 }
 
+async function callMentor(messages: Message[]): Promise<string> {
+  const res = await fetch('/api/chat', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      messages: messages.map((m) => ({ role: m.role, content: m.content })),
+    }),
+  })
+
+  const data = await res.json().catch(() => ({}))
+  if (!res.ok) {
+    throw new Error(data?.error || `Request failed (${res.status})`)
+  }
+  return data.content || 'No response from mentor.'
+}
+
 export function Chat() {
   const [params] = useSearchParams()
   const initialQ = params.get('q') || ''
@@ -97,6 +113,7 @@ export function Chat() {
   const [input, setInput] = useState('')
   const [sending, setSending] = useState(false)
   const [started, setStarted] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const didAutoSend = useRef(false)
@@ -109,7 +126,6 @@ export function Chat() {
     scrollToBottom()
   }, [messages, sending, scrollToBottom])
 
-  // Auto-resize textarea
   useEffect(() => {
     const el = textareaRef.current
     if (!el) return
@@ -123,28 +139,39 @@ export function Chat() {
       if (!text || sending) return
 
       setStarted(true)
+      setError(null)
       const userMsg: Message = { id: crypto.randomUUID(), role: 'user', content: text }
-      setMessages((m) => [...m, userMsg])
+      const nextMessages = [...messages, userMsg]
+      setMessages(nextMessages)
       setInput('')
       setSending(true)
 
-      // Reset textarea height
       if (textareaRef.current) {
         textareaRef.current.style.height = 'auto'
       }
 
-      // Simulate thinking delay — replace with real AI later
-      await new Promise((r) => setTimeout(r, 1100 + Math.random() * 600))
-
-      const reply: Message = {
-        id: crypto.randomUUID(),
-        role: 'assistant',
-        content: buildPlaceholderReply(text),
+      try {
+        const content = await callMentor(nextMessages)
+        const reply: Message = {
+          id: crypto.randomUUID(),
+          role: 'assistant',
+          content,
+        }
+        setMessages((m) => [...m, reply])
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : 'Something went wrong'
+        setError(msg)
+        const reply: Message = {
+          id: crypto.randomUUID(),
+          role: 'assistant',
+          content: `I hit a problem reaching the mentor engine.\n\n${msg}\n\nCheck that NVIDIA_API_KEY is set on Vercel, then try again.`,
+        }
+        setMessages((m) => [...m, reply])
+      } finally {
+        setSending(false)
       }
-      setMessages((m) => [...m, reply])
-      setSending(false)
     },
-    [input, sending]
+    [input, sending, messages]
   )
 
   useEffect(() => {
@@ -165,7 +192,6 @@ export function Chat() {
 
   return (
     <div className="flex flex-col h-[calc(100dvh-7.5rem)] sm:h-[calc(100dvh-8rem)] -mx-4">
-      {/* Messages area */}
       <div className="flex-1 overflow-y-auto px-4">
         {showWelcome ? (
           <div className="flex flex-col items-center justify-center min-h-full py-8 animate-fade-in">
@@ -176,7 +202,7 @@ export function Chat() {
               How can I help you today?
             </h1>
             <p className="text-sm text-slate-400 text-center max-w-sm mb-8 leading-relaxed">
-              Your AI mentor for income, business and financial growth — grounded in Trendorafinds content.
+              Your AI mentor for income, business and financial growth — powered by NVIDIA models.
             </p>
 
             <div className="w-full max-w-md grid gap-2">
@@ -218,7 +244,6 @@ export function Chat() {
         )}
       </div>
 
-      {/* Input bar */}
       <div className="shrink-0 px-4 pt-2 pb-1 border-t border-white/[0.06] bg-[#07070A]/80 backdrop-blur-xl">
         <form
           onSubmit={(e) => {
@@ -227,6 +252,9 @@ export function Chat() {
           }}
           className="max-w-2xl mx-auto"
         >
+          {error && (
+            <p className="text-[11px] text-rose-400/90 text-center mb-2 px-2">{error}</p>
+          )}
           <div className="relative flex items-end gap-2 rounded-2xl border border-white/10 bg-white/[0.04] focus-within:border-violet-500/40 focus-within:ring-2 focus-within:ring-violet-500/15 transition-all px-3 py-2">
             <textarea
               ref={textareaRef}
@@ -248,25 +276,10 @@ export function Chat() {
             </button>
           </div>
           <p className="text-[10px] text-slate-600 text-center mt-2 mb-1">
-            WISECRAFT prioritizes Trendorafinds content · Enter to send · Shift+Enter for new line
+            Powered by NVIDIA NIM · Enter to send · Shift+Enter for new line
           </p>
         </form>
       </div>
     </div>
   )
-}
-
-function buildPlaceholderReply(text: string): string {
-  const short = text.length > 70 ? text.slice(0, 70) + '…' : text
-  return `Good question.
-
-Right now you're seeing the upgraded chat interface. The real mentor engine (searching Trendorafinds first, then building a personal plan) will plug in next.
-
-For “${short}” I would normally:
-
-1. Search relevant guides on Trendorafinds
-2. Match them to your capital, skills and goals
-3. Give you a clear next action you can take today
-
-Keep exploring the UI — the coaching brain is coming.`.trim()
 }
