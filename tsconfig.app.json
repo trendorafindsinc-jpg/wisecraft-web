@@ -18,12 +18,3 @@
   },
   "include": ["src"]
 }
- "noFallthroughCasesInSwitch": true
-  },
-  "include": ["src"]
-}
-Only": true,
-    "noFallthroughCasesInSwitch": true
-  },
-  "include": ["src"]
-}
