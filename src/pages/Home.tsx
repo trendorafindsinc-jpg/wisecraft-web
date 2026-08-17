@@ -8,10 +8,10 @@ export function Home() {
       <section className="glass-panel p-6">
         <p className="text-xs uppercase tracking-widest text-cyan-400/90 mb-2">Your AI Mentor</p>
         <h1 className="text-2xl font-semibold tracking-tight mb-2">
-          Build income. Grow your business. Get clearer with money.
+          Build income — online or with your hands. Grow skills. Get clearer with money.
         </h1>
         <p className="text-slate-400 text-sm leading-relaxed mb-5">
-          WISECRAFT coaches you with practical steps grounded in real educational content from Trendorafinds — not generic advice.
+          Practical coaching for freelancing, trades, small business and money — grounded in Trendorafinds, aimed at real results.
         </p>
         <Link to="/chat" className="btn btn-primary w-full sm:w-auto">
           <MessageSquare size={18} />
