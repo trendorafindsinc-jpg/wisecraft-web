@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from 'react'
+import { useState, useRef, useEffect, useCallback, type KeyboardEvent } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { Send, Sparkles, Copy, Check, BookOpen } from 'lucide-react'
 
@@ -210,7 +210,7 @@ export function Chat() {
     }
   }, [initialQ, handleSend])
 
-  function onKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
+  function onKeyDown(e: KeyboardEvent<HTMLTextAreaElement>) {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
       void handleSend()
