@@ -1,12 +1,38 @@
 import { useState, useRef, useEffect, useCallback, type KeyboardEvent } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { Send, Sparkles, Copy, Check, BookOpen } from 'lucide-react'
+import { Send, Sparkles, Copy, Check, BookOpen, PlusCircle } from 'lucide-react'
 
 type Message = {
   id: string
   role: 'user' | 'assistant'
   content: string
   sources?: { title: string; link: string }[]
+  timestamp: number
+}
+
+const STORAGE_KEY = 'wisecraft-chat-history'
+const MAX_HISTORY_LENGTH = 50
+
+function loadChatFromStorage(): Message[] {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY)
+    if (stored) {
+      const parsed = JSON.parse(stored)
+      return Array.isArray(parsed) ? parsed : []
+    }
+  } catch {
+    console.warn('Failed to load chat history')
+  }
+  return []
+}
+
+function saveChatToStorage(messages: Message[]) {
+  try {
+    const limited = messages.slice(-MAX_HISTORY_LENGTH)
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(limited))
+  } catch {
+    console.warn('Failed to save chat history')
+  }
 }
 
 const SUGGESTIONS = [
@@ -137,14 +163,18 @@ async function callMentor(messages: Message[]): Promise<{
 export function Chat() {
   const [params] = useSearchParams()
   const initialQ = params.get('q') || ''
-  const [messages, setMessages] = useState<Message[]>([])
+  const [messages, setMessages] = useState<Message[]>(() => loadChatFromStorage())
   const [input, setInput] = useState('')
   const [sending, setSending] = useState(false)
-  const [started, setStarted] = useState(false)
+  const [started, setStarted] = useState(() => loadChatFromStorage().length > 0)
   const [error, setError] = useState<string | null>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const didAutoSend = useRef(false)
+
+  useEffect(() => {
+    saveChatToStorage(messages)
+  }, [messages])
 
   const scrollToBottom = useCallback(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -168,7 +198,7 @@ export function Chat() {
 
       setStarted(true)
       setError(null)
-      const userMsg: Message = { id: crypto.randomUUID(), role: 'user', content: text }
+      const userMsg: Message = { id: crypto.randomUUID(), role: 'user', content: text, timestamp: Date.now() }
       const nextMessages = [...messages, userMsg]
       setMessages(nextMessages)
       setInput('')
@@ -185,6 +215,7 @@ export function Chat() {
           role: 'assistant',
           content,
           sources,
+          timestamp: Date.now(),
         }
         setMessages((m) => [...m, reply])
       } catch (err) {
@@ -194,6 +225,7 @@ export function Chat() {
           id: crypto.randomUUID(),
           role: 'assistant',
           content: `I hit a problem reaching the mentor engine.\n\n${msg}\n\nCheck NVIDIA_API_KEY on Vercel, then try again.`,
+          timestamp: Date.now(),
         }
         setMessages((m) => [...m, reply])
       } finally {
@@ -218,6 +250,13 @@ export function Chat() {
   }
 
   const showWelcome = !started && messages.length === 0 && !sending
+
+  function clearChat() {
+    setMessages([])
+    setStarted(false)
+    setError(null)
+    localStorage.removeItem(STORAGE_KEY)
+  }
 
   return (
     <div className="flex flex-col h-[calc(100dvh-7.5rem)] sm:h-[calc(100dvh-8rem)] -mx-4">
@@ -249,6 +288,21 @@ export function Chat() {
           </div>
         ) : (
           <div className="space-y-6 py-4 pb-6 max-w-2xl mx-auto">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs text-slate-500">
+                {messages.length} message{messages.length !== 1 ? 's' : ''}
+              </span>
+              {messages.length > 0 && (
+                <button
+                  type="button"
+                  onClick={clearChat}
+                  className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-rose-400 transition-colors"
+                >
+                  <PlusCircle size={12} className="rotate-45" />
+                  New chat
+                </button>
+              )}
+            </div>
             {messages.map((m, i) => (
               <MessageBubble
                 key={m.id}
