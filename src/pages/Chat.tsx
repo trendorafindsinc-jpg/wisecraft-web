@@ -1,11 +1,12 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { Send, Sparkles, Copy, Check } from 'lucide-react'
+import { Send, Sparkles, Copy, Check, BookOpen } from 'lucide-react'
 
 type Message = {
   id: string
   role: 'user' | 'assistant'
   content: string
+  sources?: { title: string; link: string }[]
 }
 
 const SUGGESTIONS = [
@@ -66,15 +67,36 @@ function MessageBubble({
   return (
     <div className="flex gap-3 animate-fade-in group">
       <AssistantAvatar />
-      <div className="flex-1 min-w-0 space-y-1">
+      <div className="flex-1 min-w-0 space-y-2">
         <div className="flex items-center gap-2">
           <span className="text-xs font-medium text-slate-400">WISECRAFT</span>
         </div>
         <div className="text-[15px] leading-relaxed text-slate-100 whitespace-pre-wrap">
           {message.content}
         </div>
+
+        {message.sources && message.sources.length > 0 && (
+          <div className="rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 space-y-1.5">
+            <div className="flex items-center gap-1.5 text-[11px] text-cyan-400/90">
+              <BookOpen size={12} />
+              From Trendorafinds
+            </div>
+            {message.sources.map((s) => (
+              <a
+                key={s.link}
+                href={s.link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block text-[12px] text-slate-400 hover:text-slate-200 truncate"
+              >
+                {s.title || s.link}
+              </a>
+            ))}
+          </div>
+        )}
+
         {isLast && (
-          <div className="flex items-center gap-1 pt-1 opacity-70 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+          <div className="flex items-center gap-1 pt-0.5 opacity-70 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
             <button
               type="button"
               onClick={copy}
@@ -90,7 +112,10 @@ function MessageBubble({
   )
 }
 
-async function callMentor(messages: Message[]): Promise<string> {
+async function callMentor(messages: Message[]): Promise<{
+  content: string
+  sources?: { title: string; link: string }[]
+}> {
   const res = await fetch('/api/chat', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -103,7 +128,10 @@ async function callMentor(messages: Message[]): Promise<string> {
   if (!res.ok) {
     throw new Error(data?.error || `Request failed (${res.status})`)
   }
-  return data.content || 'No response from mentor.'
+  return {
+    content: data.content || 'No response from mentor.',
+    sources: data?.meta?.sources || [],
+  }
 }
 
 export function Chat() {
@@ -151,11 +179,12 @@ export function Chat() {
       }
 
       try {
-        const content = await callMentor(nextMessages)
+        const { content, sources } = await callMentor(nextMessages)
         const reply: Message = {
           id: crypto.randomUUID(),
           role: 'assistant',
           content,
+          sources,
         }
         setMessages((m) => [...m, reply])
       } catch (err) {
@@ -164,7 +193,7 @@ export function Chat() {
         const reply: Message = {
           id: crypto.randomUUID(),
           role: 'assistant',
-          content: `I hit a problem reaching the mentor engine.\n\n${msg}\n\nCheck that NVIDIA_API_KEY is set on Vercel, then try again.`,
+          content: `I hit a problem reaching the mentor engine.\n\n${msg}\n\nCheck NVIDIA_API_KEY on Vercel, then try again.`,
         }
         setMessages((m) => [...m, reply])
       } finally {
@@ -202,7 +231,7 @@ export function Chat() {
               How can I help you today?
             </h1>
             <p className="text-sm text-slate-400 text-center max-w-sm mb-8 leading-relaxed">
-              Your AI mentor for income, business and financial growth — powered by NVIDIA models.
+              AI mentor grounded in Trendorafinds content · powered by NVIDIA
             </p>
 
             <div className="w-full max-w-md grid gap-2">
@@ -276,7 +305,7 @@ export function Chat() {
             </button>
           </div>
           <p className="text-[10px] text-slate-600 text-center mt-2 mb-1">
-            Powered by NVIDIA NIM · Enter to send · Shift+Enter for new line
+            Searches Trendorafinds first · NVIDIA NIM · Enter to send
           </p>
         </form>
       </div>
