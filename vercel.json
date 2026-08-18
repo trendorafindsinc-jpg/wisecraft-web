@@ -3,6 +3,3 @@
     { "source": "/((?!api/).*)", "destination": "/index.html" }
   ]
 }
-": "/((?!api/).*)", "destination": "/index.html" }
-  ]
-}
