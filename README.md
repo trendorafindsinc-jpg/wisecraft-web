@@ -1,69 +1,93 @@
-# WISECRAFT
+# WISECRAFT V2 — UI workspace package
 
-**AI Mentor for Income, Business & Financial Growth**  
-Flagship product of **Trendora Inc**
+**Product:** WISECRAFT by Trendora Inc  
+**Role of this package:** Modern AI mentor **UI shell** prepared for integration into the existing production/prototype repo.
 
-> Web-first · Vercel · Capacitor-ready later
+> This is **not** a full replacement of https://github.com/trendorafindsinc-jpg/wisecraft-web.git  
+> Backend truth remains the existing deployment until deliberately compared and merged.
 
-## Stack
+## Product principle
 
-- Vite + React + TypeScript
-- React Router
-- Tailwind CSS v4
-- Lucide icons
-- Trendora Design System (TDS) — dark glass, violet + cyan
+- **TrendoraTools** — know where you are  
+- **WISECRAFT** — know what to do next  
+- **Trendorafinds** — learn from knowledge and stories  
 
-## Pages
+## Tech stack
 
-| Route | Purpose |
-|-------|---------|
-| `/` | Home |
-| `/chat` | AI Mentor conversation |
-| `/onboarding` | Personalization (goals, capital, time) |
-| `/goals` | Goal tracking |
-| `/tools` | Practical tools (placeholders) |
-| `/settings` | Profile & product info |
+- Vite + React 19 + TypeScript  
+- Tailwind CSS v4 (CSS-native `@theme` tokens)  
+- React Router  
+- Zustand + localStorage persistence adapter  
+- Lucide icons  
+- Server: existing `/api/chat` (NVIDIA NIM + Trendorafinds RAG)
 
-## Setup
+## Structure
+
+```
+src/
+  components/layout|chat
+  pages/          Home Chat Goals Plans Progress Tools Knowledge Settings
+  stores/         Zustand app store
+  lib/api         sendChat() → /api/chat
+  lib/persistence localStorage adapter
+  types/
+  styles/globals.css
+api/chat.js       CANDIDATE serverless handler (do not auto-overwrite production)
+```
+
+## Local development
 
 ```bash
 npm install
 npm run dev
 ```
 
-## Deploy on Vercel
+## Environment
 
-1. Create a new GitHub repo (e.g. `wisecraft`)
-2. Push this project
-3. Import in Vercel → Framework: **Vite**
-4. Build command: `npm run build`
-5. Output directory: `dist`
-6. Deploy
+See `.env.example`. On Vercel, set:
 
-## Current status
+- `NVIDIA_API_KEY` (required, server-only)
+- `NVIDIA_MODEL` (optional)
 
-- ✅ UI shell following TDS
-- ✅ Chat interface (placeholder responses)
-- ✅ Onboarding flow (saves to localStorage)
-- ✅ Goals / Tools / Settings screens
-- ⬜ Real AI + RAG over Trendorafinds
-- ⬜ PWA polish
-- ⬜ Capacitor (Android / iOS)
+## API architecture
 
-## Brand
+```
+User → /api/chat → Trendorafinds retrieval → NVIDIA NIM → response (+ sources)
+```
 
-Part of the Trendora product family with **TrendoraTools (LUCIA)** and **Trendorafinds** content.  
-Design follows **Trendora Design System (TDS) v1**.
+Frontend never sees the API key.  
+`sendChat` is **non-streaming** (full JSON response). Real SSE streaming is not claimed.
 
-## NVIDIA NIM (LLM)
+## Persistence
 
-WISECRAFT uses NVIDIA NIM free inference (OpenAI-compatible).
+- Conversations + goals: `localStorage` via `persistence` adapter  
+- Designed so a future Trendora ID / cloud layer can replace the adapter  
+- Reads legacy `wisecraft_profile` for display only when present  
 
-1. Create a free account at https://build.nvidia.com
-2. Generate an API key (starts with `nvapi-`)
-3. In Vercel → Project → Settings → Environment Variables:
-   - `NVIDIA_API_KEY` = your key
-   - Optional: `NVIDIA_MODEL` = `meta/llama-3.1-70b-instruct` (default)
-4. Redeploy
+## Security notes
 
-Local testing of `/api/chat` requires `vercel dev` or deploying to Vercel.
+- No secrets in client bundles  
+- Permissive `Access-Control-Allow-Origin: *` removed from candidate API  
+- Rate limiting, auth, and output safety layers are **not** fully implemented here  
+
+## Deployment
+
+- `vercel.json` SPA rewrite for non-API routes  
+- Preserve existing Netlify config from production repo when merging if still in use  
+
+## Intentionally not implemented (honest placeholders)
+
+- Cloud sync / Trendora ID  
+- Real-time token streaming  
+- Plans / Progress engines  
+- Full Tools suite (integrate from existing repo)  
+- Community / social  
+- Fake analytics or financial data  
+
+## Integration into existing repo
+
+1. Keep production `api/chat.js` until diffed against `api/chat.js` in this package.  
+2. Merge UI: AppShell, routes, store, persistence.  
+3. Port existing Onboarding + Tools pages into new routes.  
+4. Re-apply PWA icons/manifest/service worker from production if stronger.  
+5. Run production build on Vercel with existing `NVIDIA_API_KEY`.  

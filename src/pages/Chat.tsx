@@ -1,63 +1,54 @@
-import { useState, useRef, useEffect, useCallback, type KeyboardEvent } from 'react'
-import { useSearchParams } from 'react-router-dom'
-import { Send, Sparkles, Copy, Check, BookOpen } from 'lucide-react'
+import { useEffect, useRef } from 'react'
+import { useParams, useSearchParams } from 'react-router-dom'
+import { useAppStore } from '../stores/app-store'
+import { Composer } from '../components/chat/Composer'
+import { MessageList } from '../components/chat/MessageList'
+import { EmptyState } from '../components/chat/EmptyState'
 
-type Message = {
-  id: string
-  role: 'user' | 'assistant'
-  content: string
-  sources?: { title: string; link: string }[]
-}
+export default function Chat() {
+  const { id } = useParams()
+  const [params] = useSearchParams()
+  const autoQ = params.get('q') || undefined
 
-const SUGGESTIONS = [
-  'I have ₦20,000. What business can I start?',
-  'How do I build an emergency fund in Nigeria?',
-  'Best side hustles for a student with limited time?',
-  'How should I budget ₦50,000 a month?',
-]
+  const setActiveConversation = useAppStore((s) => s.setActiveConversation)
+  const conversations = useAppStore((s) => s.conversations)
+  const scrollRef = useRef<HTMLDivElement>(null)
 
-function TypingDots() {
-  return (
-    <div className="flex items-center gap-1.5 px-1 py-1">
-      <span className="w-1.5 h-1.5 rounded-full bg-slate-400 animate-bounce [animation-delay:0ms]" />
-      <span className="w-1.5 h-1.5 rounded-full bg-slate-400 animate-bounce [animation-delay:150ms]" />
-      <span className="w-1.5 h-1.5 rounded-full bg-slate-400 animate-bounce [animation-delay:300ms]" />
-    </div>
-  )
-}
+  const conversation = conversations.find((c) => c.id === id)
 
-function AssistantAvatar() {
-  return (
-    <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-violet-500 to-cyan-500 flex items-center justify-center shrink-0 shadow-lg shadow-violet-900/30">
-      <Sparkles size={14} className="text-white" />
-    </div>
-  )
-}
+  useEffect(() => {
+    if (id) setActiveConversation(id)
+  }, [id, setActiveConversation])
 
-function MessageBubble({
-  message,
-  isLast,
-}: {
-  message: Message
-  isLast: boolean
-}) {
-  const [copied, setCopied] = useState(false)
-  const isUser = message.role === 'user'
-
-  async function copy() {
-    try {
-      await navigator.clipboard.writeText(message.content)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 1500)
-    } catch {
-      /* ignore */
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight
     }
-  }
+  }, [conversation?.messages])
 
-  if (isUser) {
-    return (
-      <div className="flex justify-end animate-fade-in">
-        <div className="max-w-[85%] sm:max-w-[75%] bg-violet-600 text-white px-4 py-3 rounded-2xl rounded-br-md text-[15px] leading-relaxed shadow-lg shadow-violet-900/20 whitespace-pre-wrap">
+  return (
+    <div className="flex flex-col h-full">
+      <header className="h-14 border-b border-border flex items-center px-6 bg-bg-app/80 backdrop-blur-md sticky top-0 z-10">
+        <h1 className="text-lg font-semibold text-text-primary truncate">
+          {conversation?.title || 'WISECRAFT Mentor'}
+        </h1>
+      </header>
+
+      <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 md:px-0">
+        <div className="max-w-3xl mx-auto w-full py-8">
+          {conversation && conversation.messages.length > 0 ? (
+            <MessageList messages={conversation.messages} />
+          ) : (
+            <EmptyState />
+          )}
+        </div>
+      </div>
+
+      <Composer conversationId={id} autoPrompt={autoQ} />
+    </div>
+  )
+}
+    <div className="max-w-[85%] sm:max-w-[75%] bg-violet-600 text-white px-4 py-3 rounded-2xl rounded-br-md text-[15px] leading-relaxed shadow-lg shadow-violet-900/20 whitespace-pre-wrap">
           {message.content}
         </div>
       </div>

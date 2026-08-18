@@ -1,66 +1,67 @@
+import { useState } from 'react'
 import { Target, Plus } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { useAppStore } from '../stores/app-store'
 
-export function Goals() {
-  const profile = (() => {
-    try {
-      return JSON.parse(localStorage.getItem('wisecraft_profile') || '{}')
-    } catch {
-      return {}
-    }
-  })()
+export default function Goals() {
+  const goals = useAppStore((s) => s.goals)
+  const addGoal = useAppStore((s) => s.addGoal)
+  const [title, setTitle] = useState('')
 
-  const hasProfile = Object.keys(profile).length > 0
+  function onAdd() {
+    const t = title.trim()
+    if (!t) return
+    addGoal({ title: t, category: 'General', target: t })
+    setTitle('')
+  }
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold tracking-tight">Your goals</h1>
-        <button type="button" className="btn btn-secondary text-sm py-2 px-3">
-          <Plus size={16} />
-          Add
-        </button>
-      </div>
-
-      {hasProfile ? (
-        <div className="glass-panel p-5 space-y-3">
-          <p className="text-xs uppercase tracking-widest text-cyan-400/90">From onboarding</p>
-          {profile.goal && (
-            <div>
-              <div className="text-xs text-slate-500">Main goal</div>
-              <div className="text-sm font-medium">{profile.goal}</div>
-            </div>
-          )}
-          {profile.capital && (
-            <div>
-              <div className="text-xs text-slate-500">Capital</div>
-              <div className="text-sm font-medium">{profile.capital}</div>
-            </div>
-          )}
-          {profile.time && (
-            <div>
-              <div className="text-xs text-slate-500">Time available</div>
-              <div className="text-sm font-medium">{profile.time}</div>
-            </div>
-          )}
+    <div className="flex flex-col h-full">
+      <header className="h-14 border-b border-border flex items-center px-6">
+        <h1 className="text-lg font-semibold">Goals</h1>
+      </header>
+      <div className="flex-1 overflow-y-auto p-6 max-w-lg space-y-4">
+        <div className="flex gap-2">
+          <input
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && onAdd()}
+            placeholder="Add a goal…"
+            className="flex-1 rounded-xl border border-border bg-bg-surface px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+          />
+          <button
+            type="button"
+            onClick={onAdd}
+            className="inline-flex items-center gap-1 rounded-xl bg-primary px-3 py-2 text-sm text-white hover:bg-primary-hover"
+          >
+            <Plus size={16} />
+            Add
+          </button>
         </div>
-      ) : (
-        <div className="glass-panel p-6 text-center space-y-4">
-          <div className="w-12 h-12 rounded-2xl bg-violet-500/15 flex items-center justify-center mx-auto text-violet-300">
-            <Target size={22} />
+
+        {goals.length === 0 ? (
+          <div className="text-center py-12 space-y-3">
+            <Target className="mx-auto text-text-tertiary" size={28} />
+            <p className="text-sm text-text-secondary">
+              No goals yet. Add one to track what you are working toward. Stored on
+              this device only.
+            </p>
           </div>
-          <p className="text-sm text-slate-400">
-            Complete personalization so WISECRAFT can coach you toward clear goals.
-          </p>
-          <Link to="/onboarding" className="btn btn-primary inline-flex">
-            Start personalization
-          </Link>
-        </div>
-      )}
-
-      <p className="text-xs text-slate-600 text-center">
-        Goal tracking and weekly reviews will connect here once the mentor engine is live.
-      </p>
+        ) : (
+          <ul className="space-y-2">
+            {goals.map((g) => (
+              <li
+                key={g.id}
+                className="rounded-xl border border-border bg-bg-surface px-4 py-3"
+              >
+                <div className="font-medium text-sm">{g.title}</div>
+                <div className="text-xs text-text-tertiary mt-1">
+                  {g.status} · local only
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
     </div>
   )
 }

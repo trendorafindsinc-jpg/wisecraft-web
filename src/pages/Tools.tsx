@@ -1,10 +1,16 @@
-import { Calculator, Lightbulb, Search, Wallet } from 'lucide-react'
+import { Wrench } from 'lucide-react'
+import { PlaceholderPage } from '../components/PlaceholderPage'
 
-const tools = [
-  { icon: Lightbulb, title: 'Business Idea Validator', desc: 'Describe an idea — get cost, demand and risk signals', soon: true },
-  { icon: Calculator, title: 'Profit Calculator', desc: 'Estimate margins for simple businesses', soon: true },
-  { icon: Wallet, title: 'Budget Snapshot', desc: 'Quick view of income vs expenses', soon: true },
-  { icon: Search, title: 'Opportunity Finder', desc: 'Match skills and capital to real opportunities', soon: true },
+export default function Tools() {
+  return (
+    <PlaceholderPage
+      title="Tools"
+      icon={<Wrench className="text-accent" size={22} />}
+      description="Practical helpers (validators, calculators, opportunity finder) from the existing WISECRAFT Tools experience will plug in here during integration — not simulated in this package."
+    />
+  )
+}
+rtunity Finder', desc: 'Match skills and capital to real opportunities', soon: true },
 ]
 
 export function Tools() {

@@ -1,52 +1,67 @@
-import { Link } from 'react-router-dom'
-import { MessageSquare, Target, Sparkles, ArrowRight } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import { useAppStore } from '../stores/app-store'
+import { Sparkles } from 'lucide-react'
 
-export function Home() {
+const ACTIONS = [
+  'Plan my next business idea',
+  'Create a financial-growth plan',
+  'Help me learn a practical skill',
+  'Build a 30-day action plan',
+  'I know electrical work — how do I earn from it?',
+  'Help me budget with a small income',
+]
+
+export default function Home() {
+  const navigate = useNavigate()
+  const createConversation = useAppStore((s) => s.createConversation)
+
+  function start(prompt: string) {
+    const id = createConversation(prompt.slice(0, 48))
+    navigate(`/chat/${id}?q=${encodeURIComponent(prompt)}`)
+  }
+
+  function blank() {
+    const id = createConversation()
+    navigate(`/chat/${id}`)
+  }
+
   return (
-    <div className="space-y-6 animate-fade-in">
-      {/* Hero */}
-      <section className="glass-panel p-6">
-        <p className="text-xs uppercase tracking-widest text-cyan-400/90 mb-2">Your AI Mentor</p>
+    <div className="flex-1 overflow-y-auto">
+      <div className="max-w-2xl mx-auto px-4 py-12 text-center">
+        <div className="w-14 h-14 rounded-2xl bg-primary/20 flex items-center justify-center mx-auto mb-5">
+          <Sparkles className="text-primary" size={26} />
+        </div>
         <h1 className="text-2xl font-semibold tracking-tight mb-2">
-          Build income — online or with your hands. Grow skills. Get clearer with money.
+          How can WISECRAFT help you move forward?
         </h1>
-        <p className="text-slate-400 text-sm leading-relaxed mb-5">
-          Practical coaching for freelancing, trades, small business and money — grounded in Trendorafinds, aimed at real results.
+        <p className="text-sm text-text-secondary mb-8 max-w-md mx-auto">
+          Your AI mentor for income, trades, business, and money — grounded in
+          Trendorafinds when relevant.
         </p>
-        <Link to="/chat" className="btn btn-primary w-full sm:w-auto">
-          <MessageSquare size={18} />
-          Start coaching
-        </Link>
-      </section>
-
-      {/* Quick actions */}
-      <section className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <Link to="/onboarding" className="glass-interactive p-4 flex items-start gap-3">
-          <div className="w-10 h-10 rounded-xl bg-violet-500/20 flex items-center justify-center text-violet-300 shrink-0">
-            <Sparkles size={18} />
-          </div>
-          <div>
-            <div className="font-medium text-sm">Personalize</div>
-            <div className="text-xs text-slate-500 mt-0.5">Tell us your goals, capital & skills</div>
-          </div>
-        </Link>
-        <Link to="/goals" className="glass-interactive p-4 flex items-start gap-3">
-          <div className="w-10 h-10 rounded-xl bg-cyan-500/20 flex items-center justify-center text-cyan-300 shrink-0">
-            <Target size={18} />
-          </div>
-          <div>
-            <div className="font-medium text-sm">Your goals</div>
-            <div className="text-xs text-slate-500 mt-0.5">Track progress over time</div>
-          </div>
-        </Link>
-      </section>
-
-      {/* Example prompts */}
-      <section>
-        <h2 className="text-sm font-medium text-slate-300 mb-3">Try asking</h2>
-        <div className="space-y-2">
-          {[
-            'I have ₦20,000. What business can I start?',
+        <button
+          type="button"
+          onClick={blank}
+          className="mb-8 inline-flex items-center justify-center rounded-xl bg-primary px-5 py-2.5 text-sm font-medium text-white hover:bg-primary-hover"
+        >
+          Start a new conversation
+        </button>
+        <div className="grid gap-2 text-left">
+          {ACTIONS.map((a) => (
+            <button
+              key={a}
+              type="button"
+              onClick={() => start(a)}
+              className="px-4 py-3 rounded-xl text-sm text-text-secondary border border-border bg-bg-surface hover:bg-bg-elevated hover:text-text-primary transition text-left"
+            >
+              {a}
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+What business can I start?',
             'How do I build an emergency fund in Nigeria?',
             'Best side hustles for a student with limited time?',
           ].map((q) => (
