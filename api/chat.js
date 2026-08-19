@@ -151,11 +151,18 @@ export default async function handler(req, res) {
         console.error('[WISECRAFT DEBUG] NVIDIA request timed out');
         return res.status(504).json({
           error: 'NVIDIA AI request timed out.',
+          model,
+          stage: 'nvidia-fetch',
         });
       }
 
-      console.error('[WISECRAFT DEBUG] NVIDIA request failed');
-      throw err;
+      console.error('[WISECRAFT DEBUG] NVIDIA request failed:', err?.name, err?.message);
+      return res.status(502).json({
+        error: 'NVIDIA AI request failed.',
+        detail: err?.message || 'Unknown fetch error',
+        model,
+        stage: 'nvidia-fetch',
+      });
     } finally {
       clearTimeout(timeout);
     }
