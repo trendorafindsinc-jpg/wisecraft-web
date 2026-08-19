@@ -73,7 +73,6 @@ Frontend never sees the API key.
 ## Deployment
 
 - `vercel.json` SPA rewrite for non-API routes  
-- Preserve existing Netlify config from production repo when merging if still in use  
 
 ## Intentionally not implemented (honest placeholders)
 
