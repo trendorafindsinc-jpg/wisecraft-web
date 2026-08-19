@@ -115,10 +115,13 @@ export default async function handler(req, res) {
     }));
 
     const lastUser = [...trimmed].reverse().find((m) => m.role === 'user');
+    console.error('[WISECRAFT DEBUG] before Trendorafinds');
     const docs = await retrieveFromTrendorafinds(lastUser?.content || '');
+    console.error('[WISECRAFT DEBUG] after Trendorafinds, docs:', docs.length);
     const system = buildSystemWithContext(docs);
     const model = process.env.NVIDIA_MODEL || 'meta/llama-3.1-8b-instruct';
 
+    console.error('[WISECRAFT DEBUG] before NVIDIA request, model:', model);
     const response = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -136,6 +139,7 @@ export default async function handler(req, res) {
       }),
     });
 
+    console.error('[WISECRAFT DEBUG] NVIDIA response received, status:', response.status);
     const data = await response.json().catch(() => ({}));
     if (!response.ok) {
       const msg = data?.error?.message || data?.message || `NVIDIA API error (${response.status})`;
