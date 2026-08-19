@@ -61,25 +61,3 @@ export default function Home() {
     </div>
   )
 }
-What business can I start?',
-            'How do I build an emergency fund in Nigeria?',
-            'Best side hustles for a student with limited time?',
-          ].map((q) => (
-            <Link
-              key={q}
-              to={`/chat?q=${encodeURIComponent(q)}`}
-              className="glass-card px-4 py-3 flex items-center justify-between gap-3 text-sm text-slate-300 hover:text-white transition"
-            >
-              <span className="line-clamp-1">{q}</span>
-              <ArrowRight size={16} className="shrink-0 text-slate-500" />
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      <p className="text-center text-[11px] text-slate-600 pt-2">
-        Powered by Trendorafinds · Trendora Inc
-      </p>
-    </div>
-  )
-}
