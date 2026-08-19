@@ -85,7 +85,7 @@ function buildSystemWithContext(docs) {
   return BASE_SYSTEM + `\n\nRetrieved from Trendorafinds (use when relevant):\n\n${block}`;
 }
 
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
   // Same-origin by default (frontend and API share Vercel host).
   // Do not use Access-Control-Allow-Origin: * in production.
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
