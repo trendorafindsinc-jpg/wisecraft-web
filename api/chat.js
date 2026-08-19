@@ -122,22 +122,43 @@ export default async function handler(req, res) {
     const model = process.env.NVIDIA_MODEL || 'meta/llama-3.1-8b-instruct';
 
     console.error('[WISECRAFT DEBUG] before NVIDIA request, model:', model);
-    const response = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-      },
-      body: JSON.stringify({
-        model,
-        messages: [{ role: 'system', content: system }, ...trimmed],
-        temperature: 0.65,
-        max_tokens: 700,
-        top_p: 0.9,
-        stream: false,
-      }),
-    });
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 12000);
+
+    let response;
+
+    try {
+      response = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+        body: JSON.stringify({
+          model,
+          messages: [{ role: 'system', content: system }, ...trimmed],
+          temperature: 0.65,
+          max_tokens: 700,
+          top_p: 0.9,
+          stream: false,
+        }),
+        signal: controller.signal,
+      });
+    } catch (err) {
+      if (err?.name === 'AbortError') {
+        console.error('[WISECRAFT DEBUG] NVIDIA request timed out');
+        return res.status(504).json({
+          error: 'NVIDIA AI request timed out.',
+        });
+      }
+
+      console.error('[WISECRAFT DEBUG] NVIDIA request failed');
+      throw err;
+    } finally {
+      clearTimeout(timeout);
+    }
 
     console.error('[WISECRAFT DEBUG] NVIDIA response received, status:', response.status);
     const data = await response.json().catch(() => ({}));
