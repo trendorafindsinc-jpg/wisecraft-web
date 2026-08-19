@@ -85,7 +85,11 @@ function buildSystemWithContext(docs) {
   return BASE_SYSTEM + `\n\nRetrieved from Trendorafinds (use when relevant):\n\n${block}`;
 }
 
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
+  console.error('[WISECRAFT DEBUG] handler invoked');
+  console.error('[WISECRAFT DEBUG] method:', req.method);
+  console.error('[WISECRAFT DEBUG] NVIDIA_API_KEY configured:', Boolean(process.env.NVIDIA_API_KEY));
+  console.error('[WISECRAFT DEBUG] NVIDIA_MODEL configured:', Boolean(process.env.NVIDIA_MODEL));
   // Same-origin by default (frontend and API share Vercel host).
   // Do not use Access-Control-Allow-Origin: * in production.
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -111,27 +115,59 @@ module.exports = async function handler(req, res) {
     }));
 
     const lastUser = [...trimmed].reverse().find((m) => m.role === 'user');
+    console.error('[WISECRAFT DEBUG] before Trendorafinds');
     const docs = await retrieveFromTrendorafinds(lastUser?.content || '');
+    console.error('[WISECRAFT DEBUG] after Trendorafinds, docs:', docs.length);
     const system = buildSystemWithContext(docs);
     const model = process.env.NVIDIA_MODEL || 'meta/llama-3.1-8b-instruct';
 
-    const response = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-      },
-      body: JSON.stringify({
-        model,
-        messages: [{ role: 'system', content: system }, ...trimmed],
-        temperature: 0.65,
-        max_tokens: 700,
-        top_p: 0.9,
-        stream: false,
-      }),
-    });
+    console.error('[WISECRAFT DEBUG] before NVIDIA request, model:', model);
 
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 12000);
+
+    let response;
+
+    try {
+      response = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+        body: JSON.stringify({
+          model,
+          messages: [{ role: 'system', content: system }, ...trimmed],
+          temperature: 0.65,
+          max_tokens: 700,
+          top_p: 0.9,
+          stream: false,
+        }),
+        signal: controller.signal,
+      });
+    } catch (err) {
+      if (err?.name === 'AbortError') {
+        console.error('[WISECRAFT DEBUG] NVIDIA request timed out');
+        return res.status(504).json({
+          error: 'NVIDIA AI request timed out.',
+          model,
+          stage: 'nvidia-fetch',
+        });
+      }
+
+      console.error('[WISECRAFT DEBUG] NVIDIA request failed:', err?.name, err?.message);
+      return res.status(502).json({
+        error: 'NVIDIA AI request failed.',
+        detail: err?.message || 'Unknown fetch error',
+        model,
+        stage: 'nvidia-fetch',
+      });
+    } finally {
+      clearTimeout(timeout);
+    }
+
+    console.error('[WISECRAFT DEBUG] NVIDIA response received, status:', response.status);
     const data = await response.json().catch(() => ({}));
     if (!response.ok) {
       const msg = data?.error?.message || data?.message || `NVIDIA API error (${response.status})`;
