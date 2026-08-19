@@ -86,6 +86,10 @@ function buildSystemWithContext(docs) {
 }
 
 export default async function handler(req, res) {
+  console.error('[WISECRAFT DEBUG] handler invoked');
+  console.error('[WISECRAFT DEBUG] method:', req.method);
+  console.error('[WISECRAFT DEBUG] NVIDIA_API_KEY configured:', Boolean(process.env.NVIDIA_API_KEY));
+  console.error('[WISECRAFT DEBUG] NVIDIA_MODEL configured:', Boolean(process.env.NVIDIA_MODEL));
   // Same-origin by default (frontend and API share Vercel host).
   // Do not use Access-Control-Allow-Origin: * in production.
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
