@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { persistence } from '../lib/persistence'
 import { useAppStore } from '../stores/app-store'
 
@@ -52,17 +53,17 @@ export default function Settings() {
               Guides, product information, and support resources.
             </div>
           </div>
-          <a href="/help" className="inline-flex text-sm font-medium text-accent hover:underline">
+          <Link to="/help" className="inline-flex text-sm font-medium text-accent hover:underline">
             Open Help Center →
-          </a>
+          </Link>
         </section>
 
         <section className="glass-card glass-highlight rounded-2xl p-5 space-y-3">
           <div className="text-xs uppercase tracking-wider text-text-tertiary">Legal & Privacy</div>
-          <a href="/legal/terms" className="block text-sm font-medium text-text-primary hover:text-accent">Terms of Service →</a>
-          <a href="/legal/privacy" className="block text-sm font-medium text-text-primary hover:text-accent">Privacy Policy →</a>
-          <a href="/legal/cookies" className="block text-sm font-medium text-text-primary hover:text-accent">Cookie Policy →</a>
-          <a href="/legal/ai-data" className="block text-sm font-medium text-text-primary hover:text-accent">AI & Data Use →</a>
+          <Link to="/legal/terms" className="block text-sm font-medium text-text-primary hover:text-accent">Terms of Service →</Link>
+          <Link to="/legal/privacy" className="block text-sm font-medium text-text-primary hover:text-accent">Privacy Policy →</Link>
+          <Link to="/legal/cookies" className="block text-sm font-medium text-text-primary hover:text-accent">Cookie Policy →</Link>
+          <Link to="/legal/ai-data" className="block text-sm font-medium text-text-primary hover:text-accent">AI & Data Use →</Link>
         </section>
 
         <section className="glass-card glass-highlight rounded-2xl p-5 space-y-4">

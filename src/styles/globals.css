@@ -227,69 +227,126 @@
 }
 
 
-/* WISECRAFT UI v1.1 theme overrides */
+/* ============================================================
+   WISECRAFT UI v1.1.1 — Theme Foundation
+   Fixes theme tokens so existing Tailwind semantic classes
+   actually respond to Light / Dark / System.
+   ============================================================ */
+
+:root {
+  --color-bg-app: #07070a;
+  --color-bg-sidebar: #0b0b10;
+  --color-bg-surface: #111116;
+  --color-bg-elevated: #1a1a21;
+
+  --color-text-primary: #f5f5f7;
+  --color-text-secondary: #a1a1aa;
+  --color-text-tertiary: #71717a;
+  --color-border: rgba(255, 255, 255, 0.09);
+
+  --glass-bg: rgba(255, 255, 255, 0.055);
+  --glass-bg-strong: rgba(255, 255, 255, 0.085);
+  --glass-border: rgba(255, 255, 255, 0.115);
+  --glass-highlight: rgba(255, 255, 255, 0.12);
+  --glass-shadow: 0 18px 50px rgba(0, 0, 0, 0.18);
+  --glass-blur: 24px;
+  --glass-saturate: 145%;
+}
+
 :root[data-theme='light'] {
   color-scheme: light;
 
-  --bg-app: #f5f7fb;
-  --bg-sidebar: #ffffff;
-  --bg-surface: #ffffff;
-  --bg-elevated: #eef2f7;
+  --color-bg-app: #f4f6fa;
+  --color-bg-sidebar: rgba(255, 255, 255, 0.82);
+  --color-bg-surface: rgba(255, 255, 255, 0.72);
+  --color-bg-elevated: rgba(255, 255, 255, 0.88);
 
-  --text-primary: #172033;
-  --text-secondary: #526078;
-  --text-tertiary: #7b879c;
+  --color-text-primary: #172033;
+  --color-text-secondary: #526078;
+  --color-text-tertiary: #7b879c;
+  --color-border: rgba(23, 32, 51, 0.10);
 
-  --border: rgba(23, 32, 51, 0.10);
+  --glass-bg: rgba(255, 255, 255, 0.58);
+  --glass-bg-strong: rgba(255, 255, 255, 0.72);
+  --glass-border: rgba(23, 32, 51, 0.10);
+  --glass-highlight: rgba(255, 255, 255, 0.90);
+  --glass-shadow: 0 18px 50px rgba(23, 32, 51, 0.09);
+  --glass-blur: 24px;
+  --glass-saturate: 145%;
 }
 
 :root[data-theme='dark'] {
   color-scheme: dark;
 }
 
-[data-theme='light'] .glass-card {
-  background: rgba(255, 255, 255, 0.78);
-  border-color: rgba(23, 32, 51, 0.10);
-  box-shadow:
-    0 16px 40px rgba(23, 32, 51, 0.07),
-    inset 0 1px 0 rgba(255, 255, 255, 0.85);
+/* App background follows the selected theme. */
+html {
+  background: var(--color-bg-app);
 }
 
-[data-theme='light'] .glass-highlight::before {
-  opacity: 0.55;
+body {
+  background:
+    radial-gradient(
+      circle at 8% -10%,
+      rgba(124, 58, 237, 0.14),
+      transparent 30%
+    ),
+    radial-gradient(
+      circle at 100% 100%,
+      rgba(6, 182, 212, 0.08),
+      transparent 28%
+    ),
+    var(--color-bg-app);
+  color: var(--color-text-primary);
 }
-
 
 /* ============================================================
-   WISECRAFT UI v1.1 — Glass System
+   Apple-inspired glass surfaces
    ============================================================ */
-
-:root {
-  --glass-bg: rgba(255, 255, 255, 0.055);
-  --glass-bg-strong: rgba(255, 255, 255, 0.085);
-  --glass-border: rgba(255, 255, 255, 0.115);
-  --glass-highlight: rgba(255, 255, 255, 0.12);
-  --glass-shadow: 0 18px 50px rgba(0, 0, 0, 0.18);
-  --glass-blur: 22px;
-  --glass-saturate: 135%;
-}
-
-:root[data-theme='light'] {
-  --glass-bg: rgba(255, 255, 255, 0.62);
-  --glass-bg-strong: rgba(255, 255, 255, 0.76);
-  --glass-border: rgba(23, 32, 51, 0.10);
-  --glass-highlight: rgba(255, 255, 255, 0.82);
-  --glass-shadow: 0 18px 50px rgba(23, 32, 51, 0.08);
-}
 
 .glass-card {
   position: relative;
+  overflow: hidden;
   background: var(--glass-bg);
   border: 1px solid var(--glass-border);
   backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
   -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
-  box-shadow: var(--glass-shadow);
+  box-shadow:
+    var(--glass-shadow),
+    inset 0 1px 0 var(--glass-highlight);
   isolation: isolate;
+}
+
+.glass-elevated {
+  position: relative;
+  overflow: hidden;
+  background: var(--glass-bg-strong);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(30px) saturate(155%);
+  -webkit-backdrop-filter: blur(30px) saturate(155%);
+  box-shadow:
+    0 22px 65px rgba(0, 0, 0, 0.16),
+    inset 0 1px 0 var(--glass-highlight);
+}
+
+.glass-floating {
+  position: relative;
+  overflow: hidden;
+  background: var(--glass-bg-strong);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(34px) saturate(160%);
+  -webkit-backdrop-filter: blur(34px) saturate(160%);
+  box-shadow:
+    0 28px 80px rgba(0, 0, 0, 0.20),
+    inset 0 1px 0 var(--glass-highlight);
+}
+
+.glass-control {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  box-shadow: inset 0 1px 0 var(--glass-highlight);
 }
 
 .glass-highlight::before {
@@ -299,35 +356,16 @@
   border-radius: inherit;
   pointer-events: none;
   border-top: 1px solid var(--glass-highlight);
-  opacity: 0.8;
+  opacity: 0.9;
 }
 
-.glass-elevated {
-  background: var(--glass-bg-strong);
-  border: 1px solid var(--glass-border);
-  backdrop-filter: blur(28px) saturate(145%);
-  -webkit-backdrop-filter: blur(28px) saturate(145%);
+:root[data-theme='light'] .glass-card,
+:root[data-theme='light'] .glass-elevated,
+:root[data-theme='light'] .glass-floating,
+:root[data-theme='light'] .glass-control {
   box-shadow:
-    0 22px 65px rgba(0, 0, 0, 0.20),
-    inset 0 1px 0 var(--glass-highlight);
-}
-
-.glass-floating {
-  background: var(--glass-bg-strong);
-  border: 1px solid var(--glass-border);
-  backdrop-filter: blur(32px) saturate(150%);
-  -webkit-backdrop-filter: blur(32px) saturate(150%);
-  box-shadow:
-    0 24px 70px rgba(0, 0, 0, 0.22),
-    inset 0 1px 0 var(--glass-highlight);
-}
-
-.glass-control {
-  background: var(--glass-bg);
-  border: 1px solid var(--glass-border);
-  backdrop-filter: blur(18px) saturate(135%);
-  -webkit-backdrop-filter: blur(18px) saturate(135%);
-  box-shadow: inset 0 1px 0 var(--glass-highlight);
+    0 18px 55px rgba(23, 32, 51, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.92);
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Outlet } from 'react-router-dom'
 import { Menu } from 'lucide-react'
 import { Sidebar } from './Sidebar'
@@ -9,17 +9,31 @@ import { useAppStore } from '../../stores/app-store'
 import { cn } from '../../lib/utils'
 import { ThemeManager } from '../ThemeManager'
 
+const EXPERIENCE_INTRO_KEY = 'wisecraft_experience_intro_v1'
+
 export function AppShell() {
-  const [showIntro, setShowIntro] = useState(true)
+  const [showIntro, setShowIntro] = useState(false)
 
   const sidebarCollapsed = useAppStore((s) => s.settings.sidebarCollapsed)
   const setMobileNavOpen = useAppStore((s) => s.setMobileNavOpen)
+
+  useEffect(() => {
+    const hasSeenIntro = localStorage.getItem(EXPERIENCE_INTRO_KEY) === 'true'
+    if (!hasSeenIntro) {
+      setShowIntro(true)
+    }
+  }, [])
+
+  function completeIntro() {
+    localStorage.setItem(EXPERIENCE_INTRO_KEY, 'true')
+    setShowIntro(false)
+  }
 
   return (
     <>
       <ThemeManager />
       {showIntro && (
-        <ExperienceIntro onComplete={() => setShowIntro(false)} />
+        <ExperienceIntro onComplete={completeIntro} />
       )}
 
       <div className="flex h-dvh w-screen overflow-hidden bg-bg-app text-text-primary">
