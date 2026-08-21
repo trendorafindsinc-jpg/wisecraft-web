@@ -20,7 +20,7 @@ export default function Settings() {
         </section>
         <section className="rounded-xl border border-border bg-bg-surface p-4 space-y-2">
           <div className="text-xs uppercase tracking-wider text-text-tertiary">Engine</div>
-          <div className="text-sm text-text-secondary">NVIDIA NIM · server-side key only</div>
+          <div className="text-sm text-text-secondary">WISECRAFT AI · secure connection</div>
         </section>
         <section className="rounded-xl border border-border bg-bg-surface p-4 space-y-2">
           <div className="text-xs uppercase tracking-wider text-text-tertiary">Data</div>
