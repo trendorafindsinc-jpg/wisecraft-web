@@ -36,12 +36,12 @@ export function AppShell() {
         <ExperienceIntro onComplete={completeIntro} />
       )}
 
-      <div className="flex h-dvh w-screen overflow-hidden bg-bg-app text-text-primary">
+      <div className="flex h-dvh w-full max-w-full overflow-hidden bg-bg-app text-text-primary">
         <Sidebar />
 
         <div
           className={cn(
-            'flex flex-1 flex-col min-w-0 overflow-hidden transition-[margin] duration-300',
+            'flex flex-1 w-full min-w-0 max-w-full flex-col overflow-hidden transition-[margin] duration-300',
             sidebarCollapsed ? 'lg:ml-16' : 'lg:ml-64'
           )}
         >

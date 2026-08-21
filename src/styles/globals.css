@@ -376,3 +376,27 @@ body {
     transition: none !important;
   }
 }
+
+/* ============================================================
+   Mobile viewport safety
+   Prevent fixed/sidebar surfaces from creating horizontal
+   overflow on Safari/iOS while preserving desktop layout.
+   ============================================================ */
+
+html,
+body,
+#root {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+body {
+  overflow-x: hidden;
+}
+
+@supports (overflow: clip) {
+  body {
+    overflow-x: clip;
+  }
+}
