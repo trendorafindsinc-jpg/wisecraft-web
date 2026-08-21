@@ -88,7 +88,7 @@ const markdownComponents: Components = {
     )
   },
   pre: ({ children }) => (
-    <pre className="my-5 overflow-x-auto rounded-2xl border border-border bg-black/30 p-4 shadow-inner">
+    <pre className="glass-elevated my-5 overflow-x-auto rounded-2xl p-4">
       {children}
     </pre>
   ),
@@ -167,7 +167,7 @@ function MessageRow({ message: m }: { message: Message }) {
         </div>
 
         {m.sources && m.sources.length > 0 && (
-          <div className="mt-3 rounded-2xl border border-border bg-bg-surface/70 p-3 backdrop-blur-xl">
+          <div className="glass-control mt-3 rounded-2xl p-3">
             <div className="mb-2 flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wider text-accent">
               <BookOpen size={12} />
               From Trendorafinds

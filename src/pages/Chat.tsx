@@ -30,7 +30,7 @@ export default function Chat() {
 
   return (
     <div className="flex flex-col h-full">
-      <header className="h-14 border-b border-border flex items-center px-6 bg-bg-app/80 backdrop-blur-md sticky top-0 z-10">
+      <header className="glass-control h-14 border-b border-border flex items-center px-6 sticky top-0 z-10">
         <h1 className="text-lg font-semibold text-text-primary truncate">
           {conversation?.title || 'WISECRAFT Mentor'}
         </h1>

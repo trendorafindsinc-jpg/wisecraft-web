@@ -46,7 +46,7 @@ export function AppShell() {
           )}
         >
           {/* Mobile top bar */}
-          <div className="flex h-12 items-center gap-2 border-b border-border px-3 lg:hidden">
+          <div className="glass-control flex h-12 items-center gap-2 border-b border-border px-3 lg:hidden">
             <button
               type="button"
               className="p-2 rounded-lg text-text-secondary hover:bg-bg-elevated"
@@ -64,7 +64,7 @@ export function AppShell() {
           </main>
         </div>
 
-        <div className="hidden xl:block w-80 border-l border-border bg-bg-sidebar overflow-y-auto shrink-0">
+        <div className="glass-elevated hidden xl:block w-80 border-l border-border overflow-y-auto shrink-0">
           <ContextPanel />
         </div>
 

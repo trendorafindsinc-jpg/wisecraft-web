@@ -105,14 +105,14 @@ export function Composer({ conversationId, autoPrompt }: ComposerProps) {
   }
 
   return (
-    <div className="border-t border-border bg-bg-app p-4 safe-bottom">
+    <div className="glass-elevated border-t border-border p-4 safe-bottom">
       <div className="max-w-3xl mx-auto relative">
         {error && (
           <div className="text-sm text-red-400 mb-2 px-2" role="alert">
             {error}
           </div>
         )}
-        <div className="relative bg-bg-surface border border-border rounded-2xl focus-within:ring-2 focus-within:ring-primary/30 transition-all">
+        <div className="glass-control relative rounded-2xl focus-within:ring-2 focus-within:ring-primary/30 transition-all">
           <textarea
             ref={textareaRef}
             rows={1}
