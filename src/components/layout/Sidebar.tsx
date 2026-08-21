@@ -55,12 +55,11 @@ export function Sidebar() {
       className={cn(
         'flex h-full flex-col border-r border-border bg-bg-sidebar',
         'fixed inset-y-0 left-0 z-40 transition-transform duration-300 lg:translate-x-0',
-          'lg:glass-floating',
         mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0',
         collapsed ? 'lg:w-16 w-72' : 'w-72 lg:w-64'
       )}
     >
-      <div className="glass-control flex h-14 items-center gap-2 border-b border-border px-3">
+      <div className="flex h-14 items-center gap-2 border-b border-border px-3">
         {(!collapsed || mobileOpen) && (
           <div className="flex-1 min-w-0">
             <div className="text-sm font-semibold tracking-tight">WISECRAFT</div>
