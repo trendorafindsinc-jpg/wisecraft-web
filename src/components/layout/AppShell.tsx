@@ -7,6 +7,7 @@ import { CommandPalette } from '../CommandPalette'
 import { ExperienceIntro } from '../ExperienceIntro'
 import { useAppStore } from '../../stores/app-store'
 import { cn } from '../../lib/utils'
+import { ThemeManager } from '../ThemeManager'
 
 export function AppShell() {
   const [showIntro, setShowIntro] = useState(true)
@@ -16,6 +17,7 @@ export function AppShell() {
 
   return (
     <>
+      <ThemeManager />
       {showIntro && (
         <ExperienceIntro onComplete={() => setShowIntro(false)} />
       )}
