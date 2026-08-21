@@ -53,8 +53,9 @@ export function Sidebar() {
   const shell = (
     <aside
       className={cn(
-        'glass-floating flex h-full flex-col border-r border-border',
+        'flex h-full flex-col border-r border-border bg-bg-sidebar',
         'fixed inset-y-0 left-0 z-40 transition-transform duration-300 lg:translate-x-0',
+          'lg:glass-floating',
         mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0',
         collapsed ? 'lg:w-16 w-72' : 'w-72 lg:w-64'
       )}
