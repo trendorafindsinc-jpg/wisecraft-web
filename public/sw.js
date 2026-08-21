@@ -1,5 +1,5 @@
 /* WISECRAFT service worker — app shell cache */
-const CACHE = 'wisecraft-shell-v1';
+const CACHE = 'wisecraft-shell-v2';
 const SHELL = ['/', '/index.html', '/manifest.webmanifest', '/favicon.svg', '/icon-192.png', '/icon-512.png', '/apple-touch-icon.png'];
 
 self.addEventListener('install', (event) => {
