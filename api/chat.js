@@ -1,7 +1,7 @@
 /**
- * CANDIDATE WISECRAFT /api/chat handler for Vercel.
- * Do NOT auto-replace production api without comparing implementations.
- * Env: NVIDIA_API_KEY (required), NVIDIA_MODEL (optional)
+ * WISECRAFT /api/chat handler.
+ * Server-side AI gateway with optional Trendorafinds retrieval.
+ * Provider credentials remain server-side.
  */
 const WP_SITE = 'trendorafinds.wordpress.com';
 const WP_API = `https://public-api.wordpress.com/wp/v2/sites/${WP_SITE}`;
@@ -86,10 +86,6 @@ function buildSystemWithContext(docs) {
 }
 
 export default async function handler(req, res) {
-  console.error('[WISECRAFT DEBUG] handler invoked');
-  console.error('[WISECRAFT DEBUG] method:', req.method);
-  console.error('[WISECRAFT DEBUG] NVIDIA_API_KEY configured:', Boolean(process.env.NVIDIA_API_KEY));
-  console.error('[WISECRAFT DEBUG] NVIDIA_MODEL configured:', Boolean(process.env.NVIDIA_MODEL));
   // Same-origin by default (frontend and API share Vercel host).
   // Do not use Access-Control-Allow-Origin: * in production.
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -100,7 +96,9 @@ export default async function handler(req, res) {
 
   const apiKey = process.env.NVIDIA_API_KEY;
   if (!apiKey) {
-    return res.status(500).json({ error: 'NVIDIA_API_KEY is not configured.' });
+    return res.status(500).json({
+      error: 'WISECRAFT is temporarily unavailable. Please try again later.',
+    });
   }
 
   try {
@@ -115,13 +113,10 @@ export default async function handler(req, res) {
     }));
 
     const lastUser = [...trimmed].reverse().find((m) => m.role === 'user');
-    console.error('[WISECRAFT DEBUG] before Trendorafinds');
     const docs = await retrieveFromTrendorafinds(lastUser?.content || '');
-    console.error('[WISECRAFT DEBUG] after Trendorafinds, docs:', docs.length);
     const system = buildSystemWithContext(docs);
     const model = process.env.NVIDIA_MODEL || 'meta/llama-3.1-8b-instruct';
 
-    console.error('[WISECRAFT DEBUG] before NVIDIA request, model:', model);
 
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 12000);
@@ -148,30 +143,24 @@ export default async function handler(req, res) {
       });
     } catch (err) {
       if (err?.name === 'AbortError') {
-        console.error('[WISECRAFT DEBUG] NVIDIA request timed out');
         return res.status(504).json({
-          error: 'NVIDIA AI request timed out.',
-          model,
-          stage: 'nvidia-fetch',
+          error: 'WISECRAFT is taking longer than expected. Please try again.',
         });
       }
 
-      console.error('[WISECRAFT DEBUG] NVIDIA request failed:', err?.name, err?.message);
       return res.status(502).json({
-        error: 'NVIDIA AI request failed.',
-        detail: err?.message || 'Unknown fetch error',
-        model,
-        stage: 'nvidia-fetch',
+        error: 'WISECRAFT could not complete the request. Please try again.',
       });
     } finally {
       clearTimeout(timeout);
     }
 
-    console.error('[WISECRAFT DEBUG] NVIDIA response received, status:', response.status);
     const data = await response.json().catch(() => ({}));
     if (!response.ok) {
-      const msg = data?.error?.message || data?.message || `NVIDIA API error (${response.status})`;
-      return res.status(response.status).json({ error: msg });
+      console.error('AI provider request failed:', response.status);
+      return res.status(502).json({
+        error: 'WISECRAFT could not complete the request. Please try again.',
+      });
     }
 
     const content =
@@ -181,7 +170,6 @@ export default async function handler(req, res) {
     return res.status(200).json({
       content,
       meta: {
-        model,
         retrieved: docs.length,
         sources: docs.map((d) => ({ title: d.title, link: d.link })),
       },

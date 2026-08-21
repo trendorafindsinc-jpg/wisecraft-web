@@ -135,7 +135,7 @@ export function Composer({ conversationId, autoPrompt }: ComposerProps) {
           </button>
         </div>
         <p className="text-[10px] text-text-tertiary text-center mt-2">
-          Trendorafinds first · NVIDIA NIM · Enter to send · Shift+Enter for new line
+          Your WISECRAFT mentor · Enter to send · Shift+Enter for new line
         </p>
       </div>
     </div>
