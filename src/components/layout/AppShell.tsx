@@ -37,7 +37,6 @@ export function AppShell() {
       )}
 
       <div className="flex h-dvh w-full max-w-full overflow-hidden bg-bg-app text-text-primary">
-        <Sidebar />
 
         <div
           className={cn(
