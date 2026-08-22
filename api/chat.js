@@ -250,6 +250,56 @@ async function retrieveFromTrendorafinds(queries) {
   return docs;
 }
 
+function buildResponseGuidance(messages) {
+  const text = Array.isArray(messages)
+    ? messages
+        .filter((m) => m?.role === 'user')
+        .map((m) => String(m.content || ''))
+        .join(' ')
+        .toLowerCase()
+    : '';
+
+  const instructions = [
+    'Understand the user before prescribing a solution.',
+    'Prefer one or two realistic strategies instead of listing many unrelated options.',
+    'Use concrete numbers, estimates, targets, prices, or simple calculations when useful.',
+    'Give measurable actions rather than generic motivational advice.',
+    'Explain who the user should approach, what they should offer, and how they can measure progress when relevant.'
+  ];
+
+  if (/30 day|30-day|30 days|month/.test(text)) {
+    instructions.push(
+      'If a duration is requested, make the plan fit that duration exactly.'
+    );
+  }
+
+  if (/no capital|zero capital|without capital|no money|without money/.test(text)) {
+    instructions.push(
+      'The user has little or no capital. Avoid paid advertising, expensive software, and unnecessary startup costs.'
+    );
+  }
+
+  if (/earn|income|make money|online|money|₦|naira/.test(text)) {
+    instructions.push(
+      'For income goals, translate the target into realistic customer, sale, service, or pricing numbers.'
+    );
+  }
+
+  if (/business|startup|customer|customers|profit|pricing|sell|selling/.test(text)) {
+    instructions.push(
+      'For business questions, consider the customer, offer, price, cost, margin, demand, and break-even point.'
+    );
+  }
+
+  if (/skill|learn|freelanc|remote work|online work/.test(text)) {
+    instructions.push(
+      'Recommend skills based on the users actual goal and constraints instead of telling them to learn many skills at once.'
+    );
+  }
+
+  return instructions.join('\n');
+}
+
 function buildSystemWithContext(docs) {
   if (!docs.length) {
     return BASE_SYSTEM + '\n\nRetrieved from Trendorafinds: (none matched — use general practical guidance.)';
@@ -289,7 +339,11 @@ export default async function handler(req, res) {
 
     const retrievalQueries = buildRetrievalQueries(trimmed);
     const docs = await retrieveFromTrendorafinds(retrievalQueries);
-    const system = buildSystemWithContext(docs);
+    const guidance = buildResponseGuidance(trimmed);
+    const system =
+      buildSystemWithContext(docs) +
+      '\n\nResponse Guidance:\n' +
+      guidance;
     const model = process.env.NVIDIA_MODEL || 'meta/llama-3.1-8b-instruct';
 
 
