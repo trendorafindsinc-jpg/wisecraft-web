@@ -93,7 +93,6 @@ function buildRetrievalQueries(messages) {
   if (!recent.length) return [];
 
   const combined = recent.join(' ').toLowerCase();
-
   const queries = [];
 
   const add = (query) => {
@@ -101,26 +100,63 @@ function buildRetrievalQueries(messages) {
     if (q && !queries.includes(q)) queries.push(q);
   };
 
-  // Search the knowledge base using focused concepts rather than one
-  // long multi-term query, because WordPress search is lexical.
-  if (/budget|spend|salary|income|saving|savings|emergency|debt|finance|money|expense|₦|naira/.test(combined)) {
+  /*
+   * WISECRAFT intent-aware retrieval.
+   *
+   * Important distinction:
+   * "income" can mean either:
+   *   A) earning/income generation
+   *   B) personal-finance budgeting
+   *
+   * We therefore classify the surrounding language instead of treating
+   * the word "income" by itself as a finance trigger.
+   */
+
+  const financeIntent =
+    /budget|monthly spending|spending plan|expense|expenses|save money|saving plan|savings plan|emergency fund|emergency savings|debt|loan|borrow|credit|invest|investment|compound interest|financial plan|manage my money|manage money|salary allocation|allocate my salary|living expenses/.test(combined);
+
+  const businessIntent =
+    /start a business|starting a business|business idea|business plan|small business|startup|start selling|sell products|selling products|product business|business customers|business customer|pricing|profit margin|break-even|break even|capital to start|launch a business|validate.*business|business validation/.test(combined);
+
+  const earningIntent =
+    /make money|earn money|make .*₦|earn .*₦|make .*naira|earn .*naira|income generation|increase my income|increase income|side hustle|side income|find clients|find customers|freelanc|remote work|online work|online income|digital work|sell online|selling online|earn online|make .*online|gig|gigs/.test(combined);
+
+  const skillIntent =
+    /learn .*skill|learn a skill|new skill|skill to earn|skill.*income|digital marketing|content creation|copywriting|graphic design|web design|video editing|programming|coding|virtual assistant|virtual assistance|social media management/.test(combined);
+
+  /*
+   * Priority:
+   * 1. Explicit earning intent
+   * 2. Business intent
+   * 3. Personal-finance intent
+   * 4. Skill intent
+   *
+   * This prevents a phrase like "I want to earn ₦100,000" from being
+   * incorrectly routed to budgeting content merely because it contains
+   * the word "income".
+   */
+
+  if (financeIntent) {
     add('budget Nigeria');
     add('emergency fund Nigeria');
     add('money income Nigeria');
-  }
-
-  if (/business|startup|sell|selling|customer|customers|product|profit|pricing|capital|shop|launch/.test(combined)) {
+  } else if (businessIntent) {
     add('business Nigeria');
     add('business customers pricing Nigeria');
     add('startup Nigeria');
-  }
-
-  if (/skill|freelanc|remote|online|digital|job|work|client|clients|service|earn|income|dollar/.test(combined)) {
+  } else if (earningIntent) {
     add('income skills Nigeria');
     add('online work Nigeria');
     add('freelancing Nigeria');
+  } else if (skillIntent) {
+    add('skills Nigeria');
+    add('digital skills Nigeria');
+    add('online work Nigeria');
   }
 
+  /*
+   * Domain-specific additions.
+   */
   if (/debt|loan|borrow|credit/.test(combined)) {
     add('debt management Nigeria');
   }
@@ -130,7 +166,9 @@ function buildRetrievalQueries(messages) {
     add('compound interest Nigeria');
   }
 
-  // Always retain a compact fallback based on meaningful terms.
+  /*
+   * Generic fallback for questions outside the known domains.
+   */
   if (!queries.length) {
     const stopWords = new Set([
       'the', 'and', 'for', 'with', 'that', 'this', 'have', 'want',
