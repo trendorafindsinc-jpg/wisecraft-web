@@ -300,6 +300,46 @@ function buildResponseGuidance(messages) {
   return instructions.join('\n');
 }
 
+function buildExecutionGuidance(messages) {
+  const text = Array.isArray(messages)
+    ? messages
+        .filter((m) => m?.role === 'user')
+        .map((m) => String(m.content || ''))
+        .join(' ')
+        .toLowerCase()
+    : '';
+
+  const instructions = [
+    'Turn advice into an executable next step whenever possible.',
+    'For plans, prioritize actions the user can actually perform with their available resources.',
+    'For income goals, show a simple path from activity to customer to payment.',
+    'For business goals, distinguish assumptions from facts and identify what should be validated first.',
+    'For learning goals, connect the skill directly to a practical outcome or service the user can sell.',
+    'Do not recommend unnecessary tools, subscriptions, paid advertising, or complicated systems.',
+    'When the user asks for a plan, make the sequence clear: first action, next action, measurement, and adjustment.'
+  ];
+
+  if (/no capital|zero capital|without capital|no money|without money/.test(text)) {
+    instructions.push(
+      'With no capital, prioritize free outreach, free tools, direct selling, samples, and service-based work.'
+    );
+  }
+
+  if (/100,000|₦100|naira|income|earn|make money|make.*online/.test(text)) {
+    instructions.push(
+      'Do not treat the target income as guaranteed. Calculate how many customers, sales, or jobs would be needed to approach the target.'
+    );
+  }
+
+  if (/30 day|30-day|30 days/.test(text)) {
+    instructions.push(
+      'For a 30-day plan, organize actions across all 30 days or clearly group the days without extending beyond day 30.'
+    );
+  }
+
+  return instructions.join('\n');
+}
+
 function buildSystemWithContext(docs) {
   if (!docs.length) {
     return BASE_SYSTEM + '\n\nRetrieved from Trendorafinds: (none matched — use general practical guidance.)';
@@ -340,10 +380,13 @@ export default async function handler(req, res) {
     const retrievalQueries = buildRetrievalQueries(trimmed);
     const docs = await retrieveFromTrendorafinds(retrievalQueries);
     const guidance = buildResponseGuidance(trimmed);
+    const executionGuidance = buildExecutionGuidance(trimmed);
     const system =
       buildSystemWithContext(docs) +
       '\n\nResponse Guidance:\n' +
-      guidance;
+      guidance +
+      '\n\nExecution Guidance:\n' +
+      executionGuidance;
     const model = process.env.NVIDIA_MODEL || 'meta/llama-3.1-8b-instruct';
 
 
