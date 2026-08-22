@@ -340,6 +340,55 @@ function buildExecutionGuidance(messages) {
   return instructions.join('\n');
 }
 
+function buildDecisionGuidance(messages) {
+  const text = Array.isArray(messages)
+    ? messages
+        .filter((m) => m?.role === 'user')
+        .map((m) => String(m.content || ''))
+        .join(' ')
+        .toLowerCase()
+    : '';
+
+  const instructions = [
+    'Before recommending a strategy, evaluate whether it is feasible for the users stated goal and constraints.',
+    'Separate the users goal, known constraints, unknown information, assumptions, and proposed strategy.',
+    'When multiple strategies could work, compare them briefly using startup cost, learning time, customer access, earning potential, difficulty, and time to first payment.',
+    'Do not choose an option merely because retrieved content mentions it. Retrieved knowledge is evidence, not an automatic recommendation.',
+    'Prefer the strategy that best fits the users actual constraints and time horizon.',
+    'For income targets, calculate the basic economics: target income, price or revenue per sale/client, number of sales or clients required, and a reasonable prospect-to-client funnel when assumptions can be stated.',
+    'Clearly label estimates and assumptions. Never present estimated conversion rates, prices, demand, or earnings as guaranteed facts.',
+    'If a critical fact is missing, either ask a targeted question or provide a conditional recommendation using an explicit assumption.',
+    'After choosing a strategy, explain why it was selected and what evidence would cause WISECRAFT to change the recommendation.',
+    'Prefer one strong recommendation with a backup option over a long list of unrelated possibilities.'
+  ];
+
+  if (/no capital|zero capital|without capital|no money|without money/.test(text)) {
+    instructions.push(
+      'For zero-capital situations, prioritize service businesses, direct outreach, free tools, existing skills, and activities that can produce a first sale without upfront spending.'
+    );
+  }
+
+  if (/100,000|₦100|naira|income|earn|make money|make.*online/.test(text)) {
+    instructions.push(
+      'For an income target, explicitly show the arithmetic connecting the offer price to the target. Then distinguish clients needed from prospects that may need to be contacted.'
+    );
+  }
+
+  if (/30 day|30-day|30 days/.test(text)) {
+    instructions.push(
+      'For a 30-day target, consider whether learning time, portfolio creation, outreach, sales, delivery, and payment collection can realistically fit inside the same 30 days.'
+    );
+  }
+
+  if (/business|startup|customer|customers|profit|pricing|sell|selling/.test(text)) {
+    instructions.push(
+      'For business decisions, evaluate customer demand, offer clarity, price, direct costs, margin, competition, customer acquisition difficulty, and break-even when relevant.'
+    );
+  }
+
+  return instructions.join('\n');
+}
+
 function buildSystemWithContext(docs) {
   if (!docs.length) {
     return BASE_SYSTEM + '\n\nRetrieved from Trendorafinds: (none matched — use general practical guidance.)';
@@ -381,12 +430,15 @@ export default async function handler(req, res) {
     const docs = await retrieveFromTrendorafinds(retrievalQueries);
     const guidance = buildResponseGuidance(trimmed);
     const executionGuidance = buildExecutionGuidance(trimmed);
+    const decisionGuidance = buildDecisionGuidance(trimmed);
     const system =
       buildSystemWithContext(docs) +
       '\n\nResponse Guidance:\n' +
       guidance +
       '\n\nExecution Guidance:\n' +
-      executionGuidance;
+      executionGuidance +
+      '\n\nDecision and Feasibility Guidance:\n' +
+      decisionGuidance;
     const model = process.env.NVIDIA_MODEL || 'meta/llama-3.1-8b-instruct';
 
 
