@@ -29,6 +29,7 @@ interface AppState {
   deleteConversation: (id: string) => void
   toggleSidebar: () => void
   setMobileNavOpen: (open: boolean) => void
+  setTheme: (theme: AppSettings['theme']) => void
   setOnboarded: () => void
   addGoal: (goal: Omit<Goal, 'id' | 'createdAt' | 'updatedAt' | 'progress' | 'milestones' | 'status'> & Partial<Goal>) => string
 }
@@ -167,6 +168,17 @@ export const useAppStore = create<AppState>((set, get) => ({
     set((state) => ({
       settings: { ...state.settings, mobileNavOpen: open },
     })),
+
+  setTheme: (theme) =>
+    set((state) => {
+      const newSettings = {
+        ...state.settings,
+        theme,
+      }
+
+      persistence.saveSettings(newSettings)
+      return { settings: newSettings }
+    }),
 
   setOnboarded: () => {
     persistence.setOnboarded()

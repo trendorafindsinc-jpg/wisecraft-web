@@ -225,3 +225,191 @@
     scroll-behavior: auto !important;
   }
 }
+
+
+/* ============================================================
+   WISECRAFT UI v1.1.1 — Theme Foundation
+   Fixes theme tokens so existing Tailwind semantic classes
+   actually respond to Light / Dark / System.
+   ============================================================ */
+
+:root {
+  --color-bg-app: #07070a;
+  --color-bg-sidebar: #0b0b10;
+  --color-bg-surface: #111116;
+  --color-bg-elevated: #1a1a21;
+
+  --color-text-primary: #f5f5f7;
+  --color-text-secondary: #a1a1aa;
+  --color-text-tertiary: #71717a;
+  --color-border: rgba(255, 255, 255, 0.09);
+
+  --glass-bg: rgba(255, 255, 255, 0.055);
+  --glass-bg-strong: rgba(255, 255, 255, 0.085);
+  --glass-border: rgba(255, 255, 255, 0.115);
+  --glass-highlight: rgba(255, 255, 255, 0.12);
+  --glass-shadow: 0 18px 50px rgba(0, 0, 0, 0.18);
+  --glass-blur: 24px;
+  --glass-saturate: 145%;
+}
+
+:root[data-theme='light'] {
+  color-scheme: light;
+
+  --color-bg-app: #f4f6fa;
+  --color-bg-sidebar: rgba(255, 255, 255, 0.82);
+  --color-bg-surface: rgba(255, 255, 255, 0.72);
+  --color-bg-elevated: rgba(255, 255, 255, 0.88);
+
+  --color-text-primary: #172033;
+  --color-text-secondary: #526078;
+  --color-text-tertiary: #7b879c;
+  --color-border: rgba(23, 32, 51, 0.10);
+
+  --glass-bg: rgba(255, 255, 255, 0.58);
+  --glass-bg-strong: rgba(255, 255, 255, 0.72);
+  --glass-border: rgba(23, 32, 51, 0.10);
+  --glass-highlight: rgba(255, 255, 255, 0.90);
+  --glass-shadow: 0 18px 50px rgba(23, 32, 51, 0.09);
+  --glass-blur: 24px;
+  --glass-saturate: 145%;
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+}
+
+/* App background follows the selected theme. */
+html {
+  background: var(--color-bg-app);
+}
+
+body {
+  background:
+    radial-gradient(
+      circle at 8% -10%,
+      rgba(124, 58, 237, 0.14),
+      transparent 30%
+    ),
+    radial-gradient(
+      circle at 100% 100%,
+      rgba(6, 182, 212, 0.08),
+      transparent 28%
+    ),
+    var(--color-bg-app);
+  color: var(--color-text-primary);
+}
+
+/* ============================================================
+   Apple-inspired glass surfaces
+   ============================================================ */
+
+.glass-card {
+  position: relative;
+  overflow: hidden;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  box-shadow:
+    var(--glass-shadow),
+    inset 0 1px 0 var(--glass-highlight);
+  isolation: isolate;
+}
+
+.glass-elevated {
+  position: relative;
+  overflow: hidden;
+  background: var(--glass-bg-strong);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(30px) saturate(155%);
+  -webkit-backdrop-filter: blur(30px) saturate(155%);
+  box-shadow:
+    0 22px 65px rgba(0, 0, 0, 0.16),
+    inset 0 1px 0 var(--glass-highlight);
+}
+
+.glass-floating {
+  position: relative;
+  overflow: hidden;
+  background: var(--glass-bg-strong);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(34px) saturate(160%);
+  -webkit-backdrop-filter: blur(34px) saturate(160%);
+  box-shadow:
+    0 28px 80px rgba(0, 0, 0, 0.20),
+    inset 0 1px 0 var(--glass-highlight);
+}
+
+.glass-control {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  box-shadow: inset 0 1px 0 var(--glass-highlight);
+}
+
+.glass-highlight::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  border-top: 1px solid var(--glass-highlight);
+  opacity: 0.9;
+}
+
+:root[data-theme='light'] .glass-card,
+:root[data-theme='light'] .glass-elevated,
+:root[data-theme='light'] .glass-floating,
+:root[data-theme='light'] .glass-control {
+  box-shadow:
+    0 18px 55px rgba(23, 32, 51, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.92);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glass-card,
+  .glass-elevated,
+  .glass-floating,
+  .glass-control {
+    transition: none !important;
+  }
+}
+
+/* ============================================================
+   Mobile viewport safety
+   Prevent fixed/sidebar surfaces from creating horizontal
+   overflow on Safari/iOS while preserving desktop layout.
+   ============================================================ */
+
+html,
+body,
+#root {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+body {
+  overflow-x: hidden;
+}
+
+@supports (overflow: clip) {
+  body {
+    overflow-x: clip;
+  }
+}
+
+/* TEMPORARY DIAGNOSTIC: disable glass compositing */
+@media (max-width: 1023px) {
+  .glass-card,
+  .glass-elevated,
+  .glass-floating,
+  .glass-control,
+  .glass {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    box-shadow: none !important;
+  }
+}
